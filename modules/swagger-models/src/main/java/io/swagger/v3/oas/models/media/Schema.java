@@ -1,6 +1,7 @@
 package io.swagger.v3.oas.models.media;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.models.annotations.OpenAPI30;
 import io.swagger.v3.oas.models.annotations.OpenAPI31;
 import io.swagger.v3.oas.models.Components;
@@ -20,8 +21,8 @@ import java.util.Set;
 /**
  * Schema
  *
- * @see "https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#schemaObject"
- * @see "https://github.com/OAI/OpenAPI-Specification/blob/3.1.0/versions/3.1.0.md#schemaObject"
+ * @see "https://github.com/OAI/OpenAPI-Specification/blob/3.0.4/versions/3.0.4.md#schema-object"
+ * @see "https://github.com/OAI/OpenAPI-Specification/blob/3.1.1/versions/3.1.1.md#schema-object"
  */
 
 public class Schema<T> {
@@ -35,6 +36,30 @@ public class Schema<T> {
         private String value;
 
         BynaryStringConversion(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+    }
+
+    public static final String SCHEMA_RESOLUTION_PROPERTY = "schema-resolution";
+    public static final String APPLY_SCHEMA_RESOLUTION_PROPERTY = "apply-schema-resolution";
+    public enum SchemaResolution {
+        @JsonProperty("default")
+        DEFAULT("default"),
+        @JsonProperty("inline")
+        INLINE("inline"),
+        @JsonProperty("all-of")
+        ALL_OF("all-of"),
+        @JsonProperty("all-of-ref")
+        ALL_OF_REF("all-of-ref");
+
+        private String value;
+
+        SchemaResolution(String value) {
             this.value = value;
         }
 

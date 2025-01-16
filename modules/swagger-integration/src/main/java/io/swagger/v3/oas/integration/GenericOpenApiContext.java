@@ -76,6 +76,10 @@ public class GenericOpenApiContext<T extends GenericOpenApiContext> implements O
 
     private Boolean convertToOpenAPI31;
 
+    private Schema.SchemaResolution schemaResolution;
+
+    private String openAPIVersion;
+
     public long getCacheTTL() {
         return cacheTTL;
     }
@@ -330,6 +334,50 @@ public class GenericOpenApiContext<T extends GenericOpenApiContext> implements O
         return (T) this;
     }
 
+    /**
+     * @since 2.2.24
+     */
+    public Schema.SchemaResolution getSchemaResolution() {
+        return schemaResolution;
+    }
+
+    /**
+     * @since 2.2.24
+     */
+    public void setSchemaResolution(Schema.SchemaResolution schemaResolution) {
+        this.schemaResolution = schemaResolution;
+    }
+
+    /**
+     * @since 2.2.24
+     */
+    public T schemaResolution(Schema.SchemaResolution schemaResolution) {
+        this.schemaResolution = schemaResolution;
+        return (T) this;
+    }
+
+    /**
+     * @since 2.2.28
+     */
+    public String getOpenAPIVersion() {
+        return openAPIVersion;
+    }
+
+    /**
+     * @since 2.2.28
+     */
+    public void setOpenAPIVersion(String openAPIVersion) {
+        this.openAPIVersion = openAPIVersion;
+    }
+
+    /**
+     * @since 2.2.28
+     */
+    public T openAPIVersion(String openAPIVersion) {
+        this.openAPIVersion = openAPIVersion;
+        return (T) this;
+    }
+
     protected void register() {
         OpenApiContextLocator.getInstance().putOpenApiContext(id, this);
     }
@@ -467,6 +515,13 @@ public class GenericOpenApiContext<T extends GenericOpenApiContext> implements O
             ((SwaggerConfiguration) openApiConfiguration).setId(id);
             ((SwaggerConfiguration) openApiConfiguration).setOpenAPI31(openAPI31);
             ((SwaggerConfiguration) openApiConfiguration).setConvertToOpenAPI31(convertToOpenAPI31);
+            if (schemaResolution != null) {
+                ((SwaggerConfiguration) openApiConfiguration).setSchemaResolution(schemaResolution);
+            }
+            if (openAPIVersion != null && !openAPIVersion.isEmpty()) {
+                ((SwaggerConfiguration) openApiConfiguration).openAPIVersion(openAPIVersion);
+                ((SwaggerConfiguration) openApiConfiguration).setSchemaResolution(schemaResolution);
+            }
         }
 
         openApiConfiguration = mergeParentConfiguration(openApiConfiguration, parent);
@@ -525,7 +580,7 @@ public class GenericOpenApiContext<T extends GenericOpenApiContext> implements O
             if (objectMapperProcessor != null) {
                 ObjectMapper mapper = IntegrationObjectMapperFactory.createJson();
                 objectMapperProcessor.processJsonObjectMapper(mapper);
-                ModelConverters.getInstance(Boolean.TRUE.equals(openApiConfiguration.isOpenAPI31())).addConverter(new ModelResolver(mapper));
+                ModelConverters.getInstance(Boolean.TRUE.equals(openApiConfiguration.isOpenAPI31()), openApiConfiguration.getSchemaResolution()).addConverter(new ModelResolver(mapper));
 
                 objectMapperProcessor.processOutputJsonObjectMapper(outputJsonMapper);
                 objectMapperProcessor.processOutputYamlObjectMapper(outputYamlMapper);
@@ -558,6 +613,10 @@ public class GenericOpenApiContext<T extends GenericOpenApiContext> implements O
 
         if (openApiConfiguration.isConvertToOpenAPI31() != null && this.convertToOpenAPI31 == null) {
             this.convertToOpenAPI31 = openApiConfiguration.isConvertToOpenAPI31();
+        }
+
+        if (openApiConfiguration.getSchemaResolution() != null && this.getSchemaResolution() == null) {
+            this.schemaResolution = openApiConfiguration.getSchemaResolution();
         }
         register();
         return (T) this;
@@ -633,6 +692,10 @@ public class GenericOpenApiContext<T extends GenericOpenApiContext> implements O
         }
         if (merged.getDefaultResponseCode() == null) {
             merged.setDefaultResponseCode(parentConfig.getDefaultResponseCode());
+        }
+
+        if (merged.getSchemaResolution() == null) {
+            merged.setSchemaResolution(parentConfig.getSchemaResolution());
         }
 
         return merged;
